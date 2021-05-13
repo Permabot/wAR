@@ -74,3 +74,19 @@ can vote on the size of the fee.
 
 _Disclaimer: We will not neccesarily run the bridge. We are only providing the technical solution
 for $wAR._
+
+
+
+## Run Dev
+cd contracts
+
+npx truffle compile
+
+### Run Migrations
+truffle migrate --reset --network BinanceTestnet
+
+
+
+### Run on Console
+
+truffle console --network BinanceTestnet

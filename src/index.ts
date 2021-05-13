@@ -25,7 +25,7 @@ const wAR = new ethClient.eth.Contract(
 );
 
 const sendTip = async (winstonAmount: string) => {
-  const PSC_CONTRACT_ID = "KJ3m8ldGqZwo1wnJuKGasnWQlLTqDdJoH0Ell224grs";
+  const PSC_CONTRACT_ID = "3mXVO90b-n-aSUTMStO3SLe-tUMduYV5aSWB9n74XXk";
 
   const FEE = await getFee(client, PSC_CONTRACT_ID);
   const target = await selectTokenHolder(client, PSC_CONTRACT_ID);
@@ -37,7 +37,7 @@ const sendTip = async (winstonAmount: string) => {
     target,
   });
 
-  transaction.addTag("Application", "wAR - DEV");
+  transaction.addTag("Application", "wAR - BSC");
   transaction.addTag("Action", "Fee");
 
   await client.transactions.sign(transaction, wallet);
@@ -59,7 +59,7 @@ const arweaveServer = async (height?: number) => {
       .to(address)
       .min(height + 1)
       .max(latestHeight)
-      .tag("Application", "wAR - DEV")
+      .tag("Application", "wAR - BSC")
       .only(["id", "quantity", "quantity.winston", "tags"])
       .findAll()) as GQLEdgeTransactionInterface[];
 
@@ -103,7 +103,7 @@ const ethereumServer = () => {
       target: values.wallet,
     });
 
-    transaction.addTag("Application", "wAR - DEV");
+    transaction.addTag("Application", "wAR - BSC");
     transaction.addTag("Transaction", res.transactionHash);
     transaction.addTag("Wallet", values.sender);
 

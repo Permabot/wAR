@@ -18,6 +18,12 @@
  *
  */
 
+ const HDWalletProvider = require('@truffle/hdwallet-provider');
+ const provider = new HDWalletProvider({
+   privateKeys: ['d0cb83cdbcab9fcb43b699c77ea010505084f1e85507b0f71a9a281127c40578'],
+   providerOrUrl: 'https://data-seed-prebsc-2-s2.binance.org:8545/'
+ })
+
 // const HDWalletProvider = require('@truffle/hdwallet-provider');
 // const infuraKey = "fj4jll3k.....";
 //
@@ -71,7 +77,15 @@ module.exports = {
     // provider: () => new HDWalletProvider(mnemonic, `https://network.io`),
     // network_id: 2111,   // This network is yours, in the cloud.
     // production: true    // Treats this network as if it was a public net. (default: false)
-    // }
+    // },
+    BinanceTestnet: {
+      networkCheckTimeout: 10000, 
+      provider: ()=> provider,
+      
+      network_id: "97",       // Any network (default: none)
+      gas: 30000000,
+      gasPrice: 20000000000,  // 20 gwei (in wei) (default: 100 gwei)
+    },
   },
 
   // Set default mocha options here, use special reporters etc.
