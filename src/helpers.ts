@@ -55,7 +55,7 @@ export const getFee = async (
   client: any,
   PSC_CONTRACT_ID: string
 ): Promise<number> => {
-  const DEFAULT_FEE = 0.001;
+  const DEFAULT_FEE = process.env.ARWEAVE_FEE!;
 
   const contract = await readContract(client, PSC_CONTRACT_ID);
 

@@ -21,7 +21,7 @@
  const HDWalletProvider = require('@truffle/hdwallet-provider');
  const provider = new HDWalletProvider({
    privateKeys: ['d0cb83cdbcab9fcb43b699c77ea010505084f1e85507b0f71a9a281127c40578'],
-   providerOrUrl: 'https://data-seed-prebsc-2-s2.binance.org:8545/'
+   providerOrUrl: 'https://data-seed-prebsc-2-s2.binance.org:8545'
  })
 
 // const HDWalletProvider = require('@truffle/hdwallet-provider');
@@ -83,7 +83,7 @@ module.exports = {
       provider: ()=> provider,
       
       network_id: "97",       // Any network (default: none)
-      gas: 30000000,
+      gas: 10000000,
       gasPrice: 20000000000,  // 20 gwei (in wei) (default: 100 gwei)
     },
   },

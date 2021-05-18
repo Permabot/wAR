@@ -34,7 +34,7 @@ send a transaction to the wallet provided by the bridge. When sending an
 $AR transaction make sure to use the following tags:
 
 ```
-Application: wAR - DEV
+Application: wAR - BSC
 Wallet: [YOUR_BSC_ADDRESS]
 ```
 
@@ -90,3 +90,14 @@ truffle migrate --reset --network BinanceTestnet
 ### Run on Console
 
 truffle console --network BinanceTestnet
+
+
+
+# Bridge
+## Run Dev
+yarn build
+
+yarn run dev
+
+
+

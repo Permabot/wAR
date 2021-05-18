@@ -1,5 +1,5 @@
-const wAR = artifacts.require("wAR");
+const Migrations = artifacts.require("Migrations");
 
-module.exports = function (deployer) {
-  deployer.deploy(wAR);
+module.exports = function(deployer) {
+  deployer.deploy(Migrations);
 };
