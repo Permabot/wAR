@@ -9,6 +9,7 @@
     "@truffle/hdwallet-provider": "^1.4.0",
     "ardb": "^1.0.8",
     "arweave": "^1.10.13",
+    "bignumber.js": "^9.0.1",
     "dotenv": "^9.0.2",
     "fs": "^0.0.1-security",
     "smartweave": "^0.4.29",

@@ -3,7 +3,7 @@ import { GQLEdgeTransactionInterface } from "ardb/lib/faces/gql";
 import Arweave from "arweave";
 import { JWKInterface } from "arweave/node/lib/wallet";
 import contract from "../contracts/build/contracts/wAR.json";
-
+import BigNumber from "bignumber.js";
 import Web3 from "web3";
 import { getFee, selectTokenHolder } from "./helpers";
 const fs = require('fs');
@@ -21,7 +21,7 @@ const client = new Arweave({
   protocol: "https",
 });
 const gql = new ArDB(client);
-// const ethClient = new Web3("https://bsc.getblock.io/testnet/?api_key=f83743ae-c193-4502-b461-fdf13c55c5f1");
+
 const ethClient = new Web3(process.env.BSCPROVIDER!);
 
 const wAR = new ethClient.eth.Contract(
@@ -44,7 +44,10 @@ const getLastArweaveBlock = () => {
     lastBlock = parseInt( fs.readFileSync(arweaveLastBlockPath, 'utf8') );
     console.log('Last Arweave block: ',lastBlock);
   } catch (err) {
-    console.error('Error reading  blk Height: ',err)
+    if(err){
+      console.error('Error reading  blk Height: ',err)
+    }
+    
   }
   return lastBlock;
 }
@@ -53,7 +56,9 @@ const writeLastArweaveBlockHeight = (lastBlockheight: number =686449) => {
   
   const arweaveLastBlockPath = 'arwlast.txt';
   fs.writeFile(arweaveLastBlockPath, lastBlockheight.toString(), { flag: 'w+' }, (err: any) => {
-    console.error('Error Writing blk Height: ', err);
+    if(err){
+      console.error('Error Writing blk Height: ', err);
+    }
   });
 }
 
@@ -119,7 +124,7 @@ const arweaveServer = async (height?: number) => {
   if (!height) height = latestHeight;
   console.log('height :', height, ' , latestHeight: ', latestHeight);
   // Check if there are new blocks.
-  if (height !== latestHeight) {
+  if (height < latestHeight) {
     // Fetch all new mined deposits sent to the bridge.
     const txs = (await gql
       .search()
@@ -137,19 +142,24 @@ const arweaveServer = async (height?: number) => {
       const userWallet = node.tags.find((tag) => tag.name === "Wallet");
 
       if (userWallet) {
-        const totalAmount = node.quantity.winston;
-        const FEE = await getFee(client, PSC_CONTRACT_ID);
-        const amount = parseFloat(totalAmount)/(1.0+FEE);
         
-        sendTip(amount.toFixed(0)).then((txID) => {
+        const totalAmount = new BigNumber(node.quantity.winston);
+        const FEE = new BigNumber(await getFee(client, PSC_CONTRACT_ID));
+        const amount = totalAmount.dividedBy(FEE.plus(1) );  // parseFloat(totalAmount)/( 1.0 + FEE);
+        // console.log('prs tot:', totalAmount.toFixed(),', fee: ',FEE.toString(),', amt:',amount, ', fix:',amount.toFixed());
+
+
+        sendTip(amount.toFixed()).then((txID) => {
           console.log(`Tipped to community: ${txID}`);
         });
-          const receipt = await sendAndSignWeb3Transaction(ethClient, wAR.methods.mint(userWallet.value, amount.toFixed(0)), process.env.BSC_PRIVATE_KEY! );
-          console.log(`\nParsed deposit:\n  ${id}.\nSent tokens:\n  ${receipt?.transactionHash}.`)
+
+        const receipt = await sendAndSignWeb3Transaction(ethClient, wAR.methods.mint(userWallet.value, amount.toFixed()), process.env.BSC_PRIVATE_KEY! );
+        console.log(`\nParsed Arweave deposit TxID:\n  ${id}.\nSent tokens Tx Hash:\n  ${receipt?.transactionHash}.`)
       }
     }
-
+    
     writeLastArweaveBlockHeight(latestHeight);
+    
   }
 
   setTimeout(arweaveServer, 120000, latestHeight);
