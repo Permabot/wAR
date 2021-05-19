@@ -22,7 +22,8 @@ const client = new Arweave({
 });
 const gql = new ArDB(client);
 
-const ethClient = new Web3(process.env.BSCPROVIDER!);
+const ethClient = new Web3(process.env.BSCPROVIDER!);// wss://bsc.getblock.io/testnet/?api_key= 
+
 
 const wAR = new ethClient.eth.Contract(
   // @ts-ignore
@@ -34,12 +35,15 @@ const wAR = new ethClient.eth.Contract(
     ).address
   }
 );
+const bscAccount = ethClient.eth.accounts.privateKeyToAccount(
+  process.env.BSC_PRIVATE_KEY!
+);
 
 let arweaveStarted=false;
 
+const arweaveLastBlockPath = 'arwlast.txt';
 const getLastArweaveBlock = () => {
-  let lastBlock=686449;
-  const arweaveLastBlockPath = 'arwlast.txt';
+  let lastBlock=686449;  
   try {
     lastBlock = parseInt( fs.readFileSync(arweaveLastBlockPath, 'utf8') );
     console.log('Last Arweave block: ',lastBlock);
@@ -53,11 +57,33 @@ const getLastArweaveBlock = () => {
 }
 
 const writeLastArweaveBlockHeight = (lastBlockheight: number =686449) => {
-  
-  const arweaveLastBlockPath = 'arwlast.txt';
   fs.writeFile(arweaveLastBlockPath, lastBlockheight.toString(), { flag: 'w+' }, (err: any) => {
     if(err){
       console.error('Error Writing blk Height: ', err);
+    }
+  });
+}
+
+const bscLastBlockPath = 'bsclast.txt';
+const getLastSavedBSCBlock = () => {
+  let lastBlock=0;
+  
+  try {
+    lastBlock = parseInt( fs.readFileSync(bscLastBlockPath, 'utf8') );
+    console.log('Last BSC block: ',lastBlock);
+  } catch (err) {
+    if(err){
+      console.error('Error reading  BSC blk Height: ',err)
+    }
+    
+  }
+  return lastBlock;
+}
+
+const writeLastBSCBlock = (lastBlockheight: number =0) => {  
+  fs.writeFile(bscLastBlockPath, lastBlockheight.toString(), { flag: 'w+' }, (err: any) => {
+    if(err){
+      console.error('Error Writing BSC blk Height: ', err);
     }
   });
 }
@@ -89,18 +115,18 @@ const arweaveServer = async (height?: number) => {
 
   const sendAndSignWeb3Transaction = async (web3: Web3, transaction: any, PRIVATE_KEY: string) => {
         try {
+            let estimatedGas = transaction.estimateGas({ from: bscAccount.address });
             const options = {
-                from: web3.eth.accounts.privateKeyToAccount(
-                  PRIVATE_KEY
-                ).address,
+                from: bscAccount.address,
                 to   :  transaction._parent._address,
                 data : transaction.encodeABI(),
-                // gas  : (await web3.eth.getBlock("latest")).gasLimit,
-                // gasLimit: web3.utils.toHex(3000000),
-                gas: '20000000',
-                gasPrice: web3.utils.toWei('50','gwei'), //web3.utils.toHex(18 * 1e9) , //'20000000000',
+                
+                // gas: '20000000',
+                // gasPrice: web3.utils.toWei('50','gwei'), //web3.utils.toHex(18 * 1e9) , //'20000000000',
+                gas: estimatedGas,
                 chainId: 97,
             };
+            
             
 
             const signed  = await web3.eth.accounts.signTransaction(options, PRIVATE_KEY);
@@ -161,17 +187,61 @@ const arweaveServer = async (height?: number) => {
     writeLastArweaveBlockHeight(latestHeight);
     
   }
-
+  
   setTimeout(arweaveServer, 120000, latestHeight);
+};
+
+const ethereumServerB = async (block?: number) => {
+  console.log(`Starting BSC Listener.Watching for Txns`);
+
+  const latestBlock = await ethClient.eth.getBlockNumber();
+  if (!block) block = latestBlock;
+  console.log('BSC Block :', block, ' , latestBlock: ', latestBlock);
+
+  if (block < latestBlock) {
+    const events = await wAR.getPastEvents('Burn', {
+      filter: {/*myIndexedParam: [20,23], myOtherIndexedParam: '0x123456789...'*/}, // Using an array means OR: e.g. 20 or 23
+      fromBlock: block,
+      toBlock: latestBlock
+    });
+
+    for (const { returnValues, transactionHash } of events) {
+      const values = returnValues;
+      // console.log('values: ', values, ', transactionHash:',transactionHash);
+      const transaction = await client.createTransaction({
+        quantity: values.amount,
+        target: values.wallet,
+      });
+
+      transaction.addTag("Application", "wAR - BSC");
+      transaction.addTag("Transaction", transactionHash);
+      transaction.addTag("Wallet", values.sender);
+
+      await client.transactions.sign(transaction, wallet);
+      await client.transactions.post(transaction);
+
+      console.log(
+        `\nParsed burn:\n  ${transactionHash}.\nSent tokens:\n  ${transaction.id}.`
+      );
+    }
+    writeLastBSCBlock(latestBlock);
+
+  }
+  
+
+  setTimeout(ethereumServerB, 30*1000, latestBlock);
+
 };
 
 const ethereumServer = () => {
   console.log(`Starting BSC Listener.Watching for Txns`);
+
+
   // Watch for a burn event to be emitted, and create an Arweave transaction
   // that sends the amount of $wAR burned in $AR to the specified address.
   wAR.events.Burn().on("data", async (res: any) => {
     const values = res.returnValues;
-
+    console.log('values: ', values);
     const transaction = await client.createTransaction({
       quantity: values.amount,
       target: values.wallet,
@@ -191,9 +261,12 @@ const ethereumServer = () => {
 };
 
 
-let block = getLastArweaveBlock();
-arweaveServer(block);
-ethereumServer();
+let arweaveBlock = getLastArweaveBlock();
+arweaveServer(arweaveBlock);
+// ethereumServer();
+
+let bscBlock = getLastSavedBSCBlock();
+ethereumServerB(bscBlock);
 
 
 
