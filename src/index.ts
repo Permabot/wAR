@@ -148,7 +148,7 @@ const arweaveServer = async (height?: number) => {
 
   const latestHeight = (await client.network.getInfo()).height;
   if (!height) height = latestHeight;
-  console.log('height :', height, ' , latestHeight: ', latestHeight);
+  // console.log('height :', height, ' , latestHeight: ', latestHeight);
   // Check if there are new blocks.
   if (height < latestHeight) {
     // Fetch all new mined deposits sent to the bridge.
@@ -158,6 +158,7 @@ const arweaveServer = async (height?: number) => {
       .min(height + 1)
       .max(latestHeight)
       .tag("Application", "wAR - BSC")
+      .tag("Action", "MINT")
       .only(["id", "quantity", "quantity.winston", "tags"])
       .findAll()) as GQLEdgeTransactionInterface[];
 
@@ -179,7 +180,7 @@ const arweaveServer = async (height?: number) => {
           console.log(`Tipped to community: ${txID}`);
         });
 
-        const receipt = await sendAndSignWeb3Transaction(ethClient, wAR.methods.mint(userWallet.value, amount.toFixed()), process.env.BSC_PRIVATE_KEY! );
+        const receipt = await sendAndSignWeb3Transaction(ethClient, wAR.methods.mint(userWallet.value, amount.toFixed(0)), process.env.BSC_PRIVATE_KEY! );
         console.log(`\nParsed Arweave deposit TxID:\n  ${id}.\nSent tokens Tx Hash:\n  ${receipt?.transactionHash}.`)
       }
     }
@@ -196,7 +197,7 @@ const ethereumServerB = async (block?: number) => {
 
   const latestBlock = await ethClient.eth.getBlockNumber();
   if (!block) block = latestBlock;
-  console.log('BSC Block :', block, ' , latestBlock: ', latestBlock);
+  // console.log('BSC Block :', block, ' , latestBlock: ', latestBlock);
 
   if (block < latestBlock) {
     const events = await wAR.getPastEvents('Burn', {
@@ -214,6 +215,7 @@ const ethereumServerB = async (block?: number) => {
       });
 
       transaction.addTag("Application", "wAR - BSC");
+      transaction.addTag("Action", "BURN");
       transaction.addTag("Transaction", transactionHash);
       transaction.addTag("Wallet", values.sender);
 

@@ -100,4 +100,8 @@ yarn build
 yarn run dev
 
 
+## Deploy
+yarn build
+pm2 start npm --name "Arweave BSC Bridge" -- start --interpreter=/root/.nvm/versions/node/v12.18.1/bin/node
+
 
