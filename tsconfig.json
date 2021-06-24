@@ -3,7 +3,8 @@
     "strict": true,
     "outDir": "dist",
     "esModuleInterop": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "downlevelIteration": true,
   },
   "files": ["src/index.ts"]
 }

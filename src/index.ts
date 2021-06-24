@@ -251,7 +251,7 @@ const arweaveServer = async (height?: number) => {
 
 const processPSTToBscTransactions = async (receivingAddress: string, height: number,latestHeight: number) => {
 
-  console.log(`Checking Arweave wallet ${receivingAddress} for PST Transactions.`);
+  // console.log(`Checking Arweave wallet ${receivingAddress} for PST Transactions.`);
   
   if (height < latestHeight) {
     // Fetch all new mined deposits sent to the bridge.
@@ -358,7 +358,7 @@ const bscServer = async (block?: number) => {
 };
 
 
-const bscPSTServer = async ( block, latestBlock)=> {
+const bscPSTServer = async ( block: any, latestBlock: any)=> {
     for( let [key, pstContract] of pstBEPContracts){
         const events = await pstContract.getPastEvents('Burn', {
             filter: {/*myIndexedParam: [20,23], myOtherIndexedParam: '0x123456789...'*/}, // Using an array means OR: e.g. 20 or 23
