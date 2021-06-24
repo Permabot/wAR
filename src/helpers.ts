@@ -51,7 +51,7 @@ export const selectTokenHolder = async (
   return weightedRandom(weighted)!;
 };
 
-export const getFee = async (
+export const getARFeePercent = async (
   client: any,
   PSC_CONTRACT_ID: string
 ): Promise<number> => {
@@ -66,3 +66,40 @@ export const getFee = async (
 
   return fee ? fee[1] : DEFAULT_FEE;
 };
+
+export const getPSTFeePercentage = async (
+  client: any,
+  PSC_CONTRACT_ID: string
+): Promise<number> => {
+  const DEFAULT_FEE = process.env.ARWEAVE_PST_FEE!;
+
+  const contract = await readContract(client, PSC_CONTRACT_ID);
+
+  const fee = contract.settings.find(
+    (setting: (string | number)[]) =>
+      setting[0].toString().toLowerCase() === "pstfee"
+  );
+
+  return fee ? fee[1] : DEFAULT_FEE;
+}
+
+export const calculatePSTFeeCharged = (
+  totalAmount: number,
+  PERCENTFEE: number
+): number => {
+  
+  let FEE = 1; // totalAmount <=101
+  
+  if(totalAmount <=101){
+      FEE=1;
+  }
+  else if(totalAmount <=202){
+      FEE=2;
+  }else if(totalAmount >202){
+      FEE = Math.ceil(totalAmount - (totalAmount/(PERCENTFEE+1) ) ) ;
+  }
+
+  return FEE;
+
+}
+

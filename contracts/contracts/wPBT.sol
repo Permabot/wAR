@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 
 pragma solidity >=0.8.0 <0.9.0;
-
 import "./library/SafeMath.sol";
 import "./IBEP20.sol";
 import "./Context.sol";
@@ -9,12 +8,7 @@ import "./Ownable.sol";
 
 
 
-
-
-
-
-
-contract wAR is Context, IBEP20, Ownable {
+contract wPBT is Context, IBEP20, Ownable {
   using SafeMath for uint256;
 
   mapping (address => uint256) private _balances;
@@ -30,13 +24,13 @@ contract wAR is Context, IBEP20, Ownable {
   string private _name;
 
   constructor() {
-    _name = "Wrapped AR";
-    _symbol = "wAR";
-    _decimals = 12;
-    _totalSupply = 1000 * (10 ** uint256(_decimals));// start from 0 // 10000 * (10 ** uint256(_decimals)); 1000000000000;
-    // _balances[msg.sender] = _totalSupply;
+    _name = "Wrapped PBT";
+    _symbol = "PBT";
+    _decimals = 0;
+    _totalSupply = 1000; // 1000 * (10 ** uint256(_decimals));// start from 0 // 10000 * (10 ** uint256(_decimals)); 1000000000000;
+    _balances[msg.sender] = _totalSupply;
 
-    // emit Transfer(address(0), msg.sender, _totalSupply);
+    emit Transfer(address(0), msg.sender, _totalSupply);
   }
 
   /**
