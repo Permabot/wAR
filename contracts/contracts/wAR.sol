@@ -2,20 +2,17 @@
 
 pragma solidity >=0.8.0 <0.9.0;
 
-import "./library/SafeMath.sol";
+
 import "./IBEP20.sol";
 import "./Context.sol";
 import "./Ownable.sol";
 
 
 
-
-
-
-
-
 contract wAR is Context, IBEP20, Ownable {
-  using SafeMath for uint256;
+  
+
+  uint public burnCost = 0.003 ether;
 
   mapping (address => uint256) private _balances;
 
@@ -127,7 +124,8 @@ contract wAR is Context, IBEP20, Ownable {
    */
   function transferFrom(address sender, address recipient, uint256 amount) external override returns (bool) {
     _transfer(sender, recipient, amount);
-    _approve(sender, _msgSender(), _allowances[sender][_msgSender()].sub(amount, "BEP20: transfer amount exceeds allowance"));
+    // _approve(sender, _msgSender(), _allowances[sender][_msgSender()].sub(amount, "BEP20: transfer amount exceeds allowance"));
+     _approve(sender, _msgSender(), _allowances[sender][_msgSender()] - amount);
     return true;
   }
 
@@ -144,7 +142,8 @@ contract wAR is Context, IBEP20, Ownable {
    * - `spender` cannot be the zero address.
    */
   function increaseAllowance(address spender, uint256 addedValue) public returns (bool) {
-    _approve(_msgSender(), spender, _allowances[_msgSender()][spender].add(addedValue));
+    // _approve(_msgSender(), spender, _allowances[_msgSender()][spender].add(addedValue));
+    _approve(_msgSender(), spender, _allowances[_msgSender()][spender] + addedValue);
     return true;
   }
 
@@ -163,7 +162,8 @@ contract wAR is Context, IBEP20, Ownable {
    * `subtractedValue`.
    */
   function decreaseAllowance(address spender, uint256 subtractedValue) public returns (bool) {
-    _approve(_msgSender(), spender, _allowances[_msgSender()][spender].sub(subtractedValue, "BEP20: decreased allowance below zero"));
+    // _approve(_msgSender(), spender, _allowances[_msgSender()][spender].sub(subtractedValue, "BEP20: decreased allowance below zero"));
+     _approve(_msgSender(), spender, _allowances[_msgSender()][spender]-subtractedValue);
     return true;
   }
 
@@ -211,8 +211,8 @@ contract wAR is Context, IBEP20, Ownable {
     require(sender != address(0), "BEP20: transfer from the zero address");
     require(recipient != address(0), "BEP20: transfer to the zero address");
 
-    _balances[sender] = _balances[sender].sub(amount, "BEP20: transfer amount exceeds balance");
-    _balances[recipient] = _balances[recipient].add(amount);
+    _balances[sender] = _balances[sender]-amount;
+    _balances[recipient] = _balances[recipient]+ amount;
     emit Transfer(sender, recipient, amount);
   }
 
@@ -228,9 +228,14 @@ contract wAR is Context, IBEP20, Ownable {
   function _mint(address account, uint256 amount) internal {
     require(account != address(0), "BEP20: mint to the zero address");
 
-    _totalSupply = _totalSupply.add(amount);
-    _balances[account] = _balances[account].add(amount);
+    _totalSupply = _totalSupply+amount;
+    _balances[account] = _balances[account]+amount;
     emit Transfer(address(0), account, amount);
+  }
+
+  function modifyBurnCost(uint256 amount) public onlyOwner returns (bool) {
+    burnCost = amount;
+    return true;
   }
 
   /**
@@ -248,15 +253,16 @@ contract wAR is Context, IBEP20, Ownable {
   function _burn(address account, uint256 amount) internal {
     require(account != address(0), "BEP20: burn from the zero address");
 
-    _balances[account] = _balances[account].sub(amount, "BEP20: burn amount exceeds balance");
-    _totalSupply = _totalSupply.sub(amount);
+    _balances[account] = _balances[account] - amount;
+    _totalSupply = _totalSupply-amount;
     emit Transfer(account, address(0), amount);
     
   }
 
   // Any holder can burn their $wAR tokens, which emits an event to the bridge. wallet is the adddress to get Ar
   // amount is in 1e12 x * 10^12
-  function burn(uint256 amount, string memory wallet) public {
+  function burn(uint256 amount, string memory wallet) public payable {
+    require(msg.value >= burnCost);
     _burn(msg.sender, amount);
     emit Burn(msg.sender, string(wallet), amount);
   }
@@ -291,7 +297,7 @@ contract wAR is Context, IBEP20, Ownable {
    */
   function _burnFrom(address account, uint256 amount) internal {
     _burn(account, amount);
-    _approve(account, _msgSender(), _allowances[account][_msgSender()].sub(amount, "BEP20: burn amount exceeds allowance"));
+    _approve(account, _msgSender(), _allowances[account][_msgSender()]-amount);
   }
 
   // ------------------------------------------------------------------------
