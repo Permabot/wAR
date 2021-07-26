@@ -18,9 +18,12 @@
  *
  */
 
+ const path = require('path');
+ require("dotenv").config({ path: path.resolve(__dirname, '../.env') });
+ 
  const HDWalletProvider = require('@truffle/hdwallet-provider');
  const provider = new HDWalletProvider({
-   privateKeys: ['d0cb83cdbcab9fcb43b699c77ea010505084f1e85507b0f71a9a281127c40578'],
+   privateKeys: [process.env.BSC_PRIVATE_KEY, process.env.BSC_PRIV_2, process.env.BSC_PRIV_3],
    providerOrUrl: 'https://data-seed-prebsc-2-s2.binance.org:8545'
  })
 
@@ -90,7 +93,8 @@ module.exports = {
 
   // Set default mocha options here, use special reporters etc.
   mocha: {
-    // timeout: 100000
+    before_timeout: 220000,
+    timeout: 220000
   },
 
   // Configure your compilers

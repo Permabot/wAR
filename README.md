@@ -40,7 +40,7 @@ Wallet: [YOUR_BSC_ADDRESS]
 
 ## Example Transactions
 
-1. The user deposits 0.01 $AR to the bridge Arweave wallet, specifying the target Ethereum wallet:
+1. The user deposits 0.01 $AR to the bridge Arweave wallet, specifying the target BSC wallet:
 <img width="800" alt="deposit-ar" src="https://user-images.githubusercontent.com/11312/118031554-4acfd700-b32c-11eb-96b1-b2cd9e7fbb5b.png">
 
 2. The bridge picks up the deposited $AR, and mints $wAR into the target BSC wallet:
@@ -85,11 +85,18 @@ npx truffle compile
 ### Run Migrations
 truffle migrate --reset --network BinanceTestnet
 
+#### Run Migration specified in file with prefix x
+truffle migrate --f x --reset --network BinanceTestnet [--verbose-rpc]
+
 
 
 ### Run on Console
 
 truffle console --network BinanceTestnet
+
+### Run test
+
+npx truffle test --network BinanceTestnet ../test/test.js
 
 
 
