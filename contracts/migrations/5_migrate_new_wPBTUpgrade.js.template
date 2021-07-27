@@ -1,0 +1,12 @@
+const { upgradeProxy } = require('@openzeppelin/truffle-upgrades');
+
+const wPBT = artifacts.require('wPBTUpgradeable');
+const wPBTV2 = artifacts.require('wPBTUpgradeableV2');
+
+
+
+module.exports = async function (deployer) {
+  const existing = await wPBT.deployed();
+  const instance = await upgradeProxy(existing.address, wPBTV2, { deployer });
+  console.log("Upgraded to ", instance.address);
+};

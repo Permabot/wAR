@@ -4,45 +4,54 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import "./IBEP20.sol";
 import "./Context.sol";
-import "./Ownable.sol";
+import "./InitializableOwnable.sol";
 import {IPancakePair, IPancakeRouter01, IPancakeRouter02} from "./library/IPancakeRouter01.sol";
 import {IPancakeFactory} from "./library/IPancakeFactory.sol";
 
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-contract wPBT is Context, IBEP20, Ownable/*, Initializable */ {
+// pragma solidity >=0.5.0;
+
+
+
+
+
+contract wPBTUpgradeable is Context, IBEP20,  InitializableOwnable   {
   
 
-  uint public burnCost = 0.0015 ether;
+  uint public burnCost ;
 
   mapping (address => uint256) private _balances;
 
   mapping (address => mapping (address => uint256)) private _allowances;
 
+
+
   // Event emitted on burn, which will be picked up by the bridge.
   event Burn(address sender, string wallet, uint256 amount);
 
   uint256 private _totalSupply;
-  uint8 private _decimals= 0;
-  string private _symbol = "PBT";
-  string private _name = "PermaBot";
+  uint8 private _decimals;
+  string private _symbol;
+  string private _name ;
 
 
   
     
-    uint256 public _taxFee = 5;
-    uint256 private _previousTaxFee = _taxFee;
+    uint256 public _taxFee ;
+    uint256 private _previousTaxFee ;
     
-    uint256 public _liquidityFee = 5;
-    uint256 private _previousLiquidityFee = _liquidityFee;
+    uint256 public _liquidityFee ;
+    uint256 private _previousLiquidityFee ;
 
-    IPancakeRouter02 public immutable pancakeRouter;
-    address public immutable pancakePair;
+    IPancakeRouter02 public  pancakeRouter;
+    address public  pancakePair;
     
     bool inSwapAndLiquify;
-    bool public swapAndLiquifyEnabled = true;
+    bool public swapAndLiquifyEnabled ;
 
-    uint256 public _maxTxAmount = 5000000 * 10**6 * 10**_decimals;
-    uint256 private numTokensSellToAddToLiquidity = 500  * 10**_decimals;
+    uint256 public _maxTxAmount ;
+    uint256 private numTokensSellToAddToLiquidity ;
 
 
     mapping (address => bool) private _isExcludedFromFee;
@@ -59,12 +68,32 @@ contract wPBT is Context, IBEP20, Ownable/*, Initializable */ {
         uint256 tokensIntoLiquidity
     );
 
-    constructor() {
+    function initialize () public override initializer {
       
+      InitializableOwnable.initialize(); // Do not forget this call!
+
+      burnCost = 0.0015 ether;
+
+      _decimals= 0;
+      _symbol = "PBT";
+      _name = "PermaBot";
+
+      _taxFee = 5;
+      _previousTaxFee = _taxFee;
+
+      _liquidityFee = 5;
+      _previousLiquidityFee = _liquidityFee;
+
       
-      
-      _totalSupply = 1000; // 1000 * (10 ** uint256(_decimals));// start from 0 // 10000 * (10 ** uint256(_decimals)); 1000000000000;
+      _totalSupply = 1000; 
       _balances[msg.sender] = _totalSupply;
+
+      swapAndLiquifyEnabled = true;
+
+      _maxTxAmount = 5000000 * 10**6 * 10**_decimals;
+      numTokensSellToAddToLiquidity = 500  * 10**_decimals;
+
+
 
       //Testnet
       IPancakeRouter02 _pancakeRouter = IPancakeRouter02(0xD99D1c33F9fC3444f8101754aBC46c52416550D1);

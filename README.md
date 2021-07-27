@@ -88,6 +88,8 @@ truffle migrate --reset --network BinanceTestnet
 #### Run Migration specified in file with prefix x
 truffle migrate --f x --reset --network BinanceTestnet [--verbose-rpc]
 
+truffle migrate   --network BinanceTestnet  --compile-all --verbose-rpc
+
 
 
 ### Run on Console

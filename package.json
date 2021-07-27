@@ -9,6 +9,7 @@
     "test": "mocha"
   },
   "dependencies": {
+    "@openzeppelin/contracts-upgradeable": "^4.2.0",
     "@truffle/hdwallet-provider": "^1.4.0",
     "ardb": "^1.0.8",
     "arweave": "^1.10.13",

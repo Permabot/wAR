@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Unlicensed
 pragma solidity >=0.8.0 <0.9.0;
 /*
  * @dev Provides information about the current execution context, including the
@@ -10,9 +11,9 @@ pragma solidity >=0.8.0 <0.9.0;
  * This contract is only required for intermediate, library-like contracts.
  */
 abstract contract Context {
-  // Empty internal constructor, to prevent people from mistakenly deploying
-  // an instance of this contract, which should be used via inheritance.
-  constructor ()  { }
+  // // Empty internal constructor, to prevent people from mistakenly deploying
+  // // an instance of this contract, which should be used via inheritance.
+  // constructor () { }
 
   function _msgSender() internal view returns (address )  {
     return msg.sender;
