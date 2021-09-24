@@ -519,6 +519,13 @@ contract wPBTUpgradeable is Context, IBEP20,  InitializableOwnable   {
         return _isExcludedFromFee[account];
     }
 
+    function excludeFromFee(address account) public onlyOwner {
+      _isExcludedFromFee[account] = true;
+    }
+    
+    function includeInFee(address account) public onlyOwner {
+        _isExcludedFromFee[account] = false;
+    }
     
     function setSwapAndLiquifyEnabled(bool _enabled) public onlyOwner {
         swapAndLiquifyEnabled = _enabled;
