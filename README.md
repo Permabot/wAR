@@ -72,9 +72,6 @@ can vote on the size of the fee.
 - [ ] Build a UI for easy usage.
 - [x] Implement staking
 
-_Disclaimer: We will not neccesarily run the bridge. We are only providing the technical solution
-for $wAR._
-
 
 
 ## Run Dev
