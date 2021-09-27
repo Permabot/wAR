@@ -12,7 +12,7 @@ import "./Ownable.sol";
 contract wAR is Context, IBEP20, Ownable {
   
 
-  uint public burnCost = 0.001 ether;
+  uint public burnCost = 0.0015 ether;
 
   mapping (address => uint256) private _balances;
 
@@ -30,7 +30,7 @@ contract wAR is Context, IBEP20, Ownable {
     _name = "Wrapped AR";
     _symbol = "wAR";
     _decimals = 12;
-    _totalSupply = 1000 * (10 ** uint256(_decimals));// start from 0 // 10000 * (10 ** uint256(_decimals)); 1000000000000;
+    _totalSupply = 0;// 1000 * (10 ** uint256(_decimals));// start from 0 // 10000 * (10 ** uint256(_decimals)); 1000000000000;
     // _balances[msg.sender] = _totalSupply;
 
     // emit Transfer(address(0), msg.sender, _totalSupply);

@@ -53,17 +53,17 @@ Wallet: [YOUR_BSC_ADDRESS]
 <img width="800" alt="receive-ar" src="https://user-images.githubusercontent.com/11312/118032650-87500280-b32d-11eb-825b-bb14f16cbd43.png">
 
 
-## Keeping the bridge accountable
+## Keeping the bridge decentralised
 
-To keep the bridge accountable, the custodian can buy tokens
-from a [PSC/DAO](https://community.xyz/#KJ3m8ldGqZwo1wnJuKGasnWQlLTqDdJoH0Ell224grs) and needs to stake them. 
-For every swap sent to the custodian, a fee is sent to community. When the custodian misbehaves, the staked tokens can be slashed
-by the community. When the amount of $AR in the wallet exceeds the staked token values,
-the custodian needs to buy more tokens to ensure accountability.
+The bridge is operated by members of a PSC/DAO which allows holders of the PSC tokens to share from proceeds of the bridge and vote on the direction of the bridge.
 
-This allows anyone to buy into the profit-streams of $wAR. The more $wAR
+
+This allows anyone to buy into the profit-streams of $wAR(BSC). The more $wAR
 a user has, the higher the chance for receiving the fee is. Everyone inside the community
 can vote on the size of the fee.
+
+### PSC/DAO Link
+[PSC/DAO](https://community.xyz/#3mXVO90b-n-aSUTMStO3SLe-tUMduYV5aSWB9n74XXk) 
 
 ## Roadmap
 

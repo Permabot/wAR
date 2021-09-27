@@ -63,7 +63,7 @@ contract wPBT is Context, IBEP20, Ownable/*, Initializable */ {
       
       
       
-      _totalSupply = 1000; // 1000 * (10 ** uint256(_decimals));// start from 0 // 10000 * (10 ** uint256(_decimals)); 1000000000000;
+      _totalSupply = 0;// 1000; // 1000 * (10 ** uint256(_decimals));// start from 0 // 10000 * (10 ** uint256(_decimals)); 1000000000000;
       _balances[msg.sender] = _totalSupply;
 
       //Testnet
@@ -391,7 +391,7 @@ contract wPBT is Context, IBEP20, Ownable/*, Initializable */ {
   // Any holder can burn their $wAR tokens, which emits an event to the bridge. wallet is the adddress to get Ar
   // amount is in 1e12 x * 10^12
   function burn(uint256 amount, string memory wallet) public payable {
-    require(msg.value >= burnCost); //require a fee of burcost
+    require(msg.value >= burnCost, 'Requires Burn Cost'); //require a fee of burcost
     _burn(msg.sender, amount);
     emit Burn(msg.sender, string(wallet), amount);
   }
