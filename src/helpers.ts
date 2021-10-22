@@ -1,4 +1,8 @@
 import { readContract } from "smartweave";
+require("dotenv").config();
+
+const TURN_ARWEAVE_FEE_OFF = process.env.TURN_ARWEAVE_FEE_OFF == 'true';
+const TURN_BSC_FEE_OFF = process.env.TURN_BSC_FEE_OFF == 'true';
 
 const weightedRandom = (dict: Record<string, number>): string | undefined => {
   let sum = 0;
@@ -55,6 +59,10 @@ export const getARFeePercent = async (
   client: any,
   PSC_CONTRACT_ID: string
 ): Promise<number> => {
+
+  if(TURN_ARWEAVE_FEE_OFF === true ){
+    return 0;
+  }
   const DEFAULT_FEE = process.env.ARWEAVE_FEE!;
 
   const contract = await readContract(client, PSC_CONTRACT_ID);
@@ -71,6 +79,9 @@ export const getPSTFeePercentage = async (
   client: any,
   PSC_CONTRACT_ID: string
 ): Promise<number> => {
+
+  
+
   const DEFAULT_FEE = process.env.ARWEAVE_PST_FEE!;
 
   const contract = await readContract(client, PSC_CONTRACT_ID);
@@ -87,6 +98,11 @@ export const calculatePSTFeeCharged = (
   totalAmount: number,
   PERCENTFEE: number
 ): number => {
+
+
+  if(TURN_ARWEAVE_FEE_OFF === true || PERCENTFEE <= 0 ){
+    return 0;
+  }
   
   let FEE = 1; // totalAmount <=101
   

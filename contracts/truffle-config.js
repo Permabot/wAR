@@ -22,7 +22,12 @@
  require("dotenv").config({ path: path.resolve(__dirname, '../.env') });
  
  const HDWalletProvider = require('@truffle/hdwallet-provider');
- const provider = new HDWalletProvider({
+ const bscProvider = new HDWalletProvider({
+  //  privateKeys: [process.env.BSC_PRIVATE_KEY, process.env.BSC_PRIV_2, process.env.BSC_PRIV_3],
+   privateKeys: [process.env.BSC_PRIVATE_KEY],
+   providerOrUrl: 'https://bsc-dataseed1.binance.org'
+ })
+ const bscTestProvider = new HDWalletProvider({
   //  privateKeys: [process.env.BSC_PRIVATE_KEY, process.env.BSC_PRIV_2, process.env.BSC_PRIV_3],
    privateKeys: [process.env.BSC_PRIVATE_KEY, process.env.BSC_PRIV_2, process.env.BSC_PRIV_3],
    providerOrUrl: 'https://data-seed-prebsc-2-s2.binance.org:8545'
@@ -82,9 +87,20 @@ module.exports = {
     // network_id: 2111,   // This network is yours, in the cloud.
     // production: true    // Treats this network as if it was a public net. (default: false)
     // },
+    Binance: {
+      networkCheckTimeout: 10000, 
+      provider: ()=> bscProvider,
+      
+      network_id: "56",       // Any network (default: none)
+      confirmations: 10,
+      timeoutBlocks: 200,
+      skipDryRun: true
+      // gas: 10000000,
+      // gasPrice: 20000000000,  // 20 gwei (in wei) (default: 100 gwei)
+    },
     BinanceTestnet: {
       networkCheckTimeout: 10000, 
-      provider: ()=> provider,
+      provider: ()=> bscTestProvider,
       
       network_id: "97",       // Any network (default: none)
       gas: 10000000,

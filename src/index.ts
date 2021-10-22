@@ -26,8 +26,12 @@ const client = new Arweave({
 });
 const gql = new ArDB(client);
 
+const BSC_CHAIN_ID = +(process.env.BSC_CHAIN!);
+
 const ethClient = new Web3(process.env.BSCPROVIDER!);// wss://bsc.getblock.io/testnet/?api_key= 
 
+const TURN_ARWEAVE_FEE_OFF = process.env.TURN_ARWEAVE_FEE_OFF == 'true';
+const TURN_BSC_FEE_OFF = process.env.TURN_BSC_FEE_OFF == 'true';
 
 const wAR = new ethClient.eth.Contract(
   // @ts-ignore
@@ -108,12 +112,10 @@ const writeLastBSCBlock = (lastBlockheight: number =0) => {
 }
 
 
-const sendTip = async (winstonAmount: string) => {
+const sendTip = async (tipAmount: number) => {
   
-  const FEE = await getARFeePercent(client, PSC_CONTRACT_ID);
-  const target = await selectTokenHolder(client, PSC_CONTRACT_ID);
-
-  const tipAmount = Math.floor(parseInt(winstonAmount) * FEE);
+  
+  const target = await selectTokenHolder(client, PSC_CONTRACT_ID);  
 
   const transaction = await client.createTransaction({
     quantity: tipAmount.toString(),
@@ -169,7 +171,7 @@ const sendAndSignWeb3Transaction = async (web3: Web3, transaction: any, PRIVATE_
             // gas: '20000000',
             // gasPrice: web3.utils.toWei('50','gwei'), //web3.utils.toHex(18 * 1e9) , //'20000000000',
             gas: estimatedGas,
-            chainId: 97,
+            chainId: BSC_CHAIN_ID,
         };
         
         console.log('options: ', options);
@@ -181,7 +183,7 @@ const sendAndSignWeb3Transaction = async (web3: Web3, transaction: any, PRIVATE_
     }
     catch (error) {
         console.log('error signing tx:',error); 
-        console.log('error signing tx:',error.message);            
+        console.log('error signing tx:', error.message);            
     }
 }
 
@@ -190,7 +192,7 @@ const arweaveServer = async (height?: number) => {
   const address = await client.wallets.getAddress(wallet);
   if(!arweaveStarted){
     console.log(`Starting Arweave Listener.`);
-    console.log(`Listening to Arweave wallet ${address}.`);
+    console.log(`Listening to Arweave wallet ${address} .`);
     arweaveStarted=true;
   }
   
@@ -199,12 +201,12 @@ const arweaveServer = async (height?: number) => {
   if (!height) height = latestHeight;
   // console.log('height :', height, ' , latestHeight: ', latestHeight);
   // Check if there are new blocks.
-  if (height < latestHeight) {
+  if (height! < latestHeight) {
     // Fetch all new mined deposits sent to the bridge.
     const txs = (await gql
       .search()
       .to(address)
-      .min(height + 1)
+      .min(height! + 1)
       .max(latestHeight)
       .tag("Application", "wAR - BSC")
       .tag("Action", "MINT")
@@ -221,14 +223,19 @@ const arweaveServer = async (height?: number) => {
       if (userWallet) {
         
         const totalAmount = new BigNumber(node.quantity.winston);
-        const FEE = new BigNumber(await getARFeePercent(client, PSC_CONTRACT_ID));
+        const FeePercent = await getARFeePercent(client, PSC_CONTRACT_ID);
+        const FEE = new BigNumber(FeePercent);
         const amount = totalAmount.dividedBy(FEE.plus(1) );  // parseFloat(totalAmount)/( 1.0 + FEE);
         // console.log('prs tot:', totalAmount.toFixed(),', fee: ',FEE.toString(),', amt:',amount, ', fix:',amount.toFixed());
 
-
-        // sendTip(amount.toFixed()).then((txID) => {
-        //   console.log(`Tipped to community: ${txID}`);
-        // });
+        
+        const tipAmount = Math.floor(parseInt(amount.toFixed()) * FeePercent);
+        if(tipAmount>0){
+          sendTip(tipAmount).then((txID) => {
+            console.log(`Tipped ${tipAmount} AR to community. TxId :  ${txID}`);
+          });
+        }
+        
 
         const receipt = await sendAndSignWeb3Transaction(ethClient, wAR.methods.mint(userWallet.value, amount.toFixed(0)), process.env.BSC_PRIVATE_KEY! );
         console.log(`\nParsed Arweave deposit TxID:\n  ${id}.\nSent tokens Tx Hash:\n  ${receipt?.transactionHash}.`)
@@ -286,12 +293,12 @@ const processPSTToBscTransactions = async (receivingAddress: string, height: num
 
         console.log('Total:', totalAmount.toFixed(),', fee: ',FEE.toString(),', Amt:',amount);
 
-        console.log('pstToWrapContract.value:', pstToWrapContract.value);
-
-
-        // sendPSTTip(pstToWrapContract.value, FEE).then((txID) => {
-        //   console.log(`Tipped to community: ${txID}`);
-        // });
+        if(FEE > 0){
+          sendPSTTip(pstToWrapContract.value, FEE).then((txID) => {
+            console.log(`Tipped ${FEE} to community. TxId: ${txID}`);
+          });
+        }
+        
         if(pstBEPContracts.has(pstToWrapContract.value)){
             const receipt = await sendAndSignWeb3Transaction(ethClient, pstBEPContracts.get(pstToWrapContract.value)?.methods.mint(userWallet.value, amount.toFixed(0)), process.env.BSC_PRIVATE_KEY! );
             console.log(`\nParsed Arweave deposit TxID:\n  ${id}.\nSent tokens Tx Hash:\n  ${receipt?.transactionHash}`)

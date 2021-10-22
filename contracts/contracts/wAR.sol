@@ -12,7 +12,7 @@ import "./Ownable.sol";
 contract wAR is Context, IBEP20, Ownable {
   
 
-  uint public burnCost = 0.0015 ether;
+  uint public burnCost = 0.0030 ether;
 
   mapping (address => uint256) private _balances;
 

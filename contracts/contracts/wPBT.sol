@@ -1,18 +1,18 @@
-// SPDX-License-Identifier: Unlicensed
+// SPDX-License-Identifier: MIT
 
 pragma solidity >=0.8.0 <0.9.0;
+
 
 import "./IBEP20.sol";
 import "./Context.sol";
 import "./Ownable.sol";
-import {IPancakePair, IPancakeRouter01, IPancakeRouter02} from "./library/IPancakeRouter01.sol";
-import {IPancakeFactory} from "./library/IPancakeFactory.sol";
 
 
-contract wPBT is Context, IBEP20, Ownable/*, Initializable */ {
+
+contract wPBT is Context, IBEP20, Ownable {
   
 
-  uint public burnCost = 0.0015 ether;
+  uint public burnCost = 0.003 ether;
 
   mapping (address => uint256) private _balances;
 
@@ -22,70 +22,19 @@ contract wPBT is Context, IBEP20, Ownable/*, Initializable */ {
   event Burn(address sender, string wallet, uint256 amount);
 
   uint256 private _totalSupply;
-  uint8 private _decimals= 0;
-  string private _symbol = "PBT";
-  string private _name = "PermaBot";
+  uint8 private _decimals;
+  string private _symbol;
+  string private _name;
 
+  constructor() {
+    _name = "PermaBot";
+    _symbol = "PBT";
+    _decimals = 0;
+    _totalSupply = 0;// 1000 * (10 ** uint256(_decimals));// start from 0 // 10000 * (10 ** uint256(_decimals)); 1000000000000;
+    // _balances[msg.sender] = _totalSupply;
 
-  
-    
-    uint256 public _taxFee = 5;
-    uint256 private _previousTaxFee = _taxFee;
-    
-    uint256 public _liquidityFee = 5;
-    uint256 private _previousLiquidityFee = _liquidityFee;
-
-    IPancakeRouter02 public immutable pancakeRouter;
-    address public immutable pancakePair;
-    
-    bool inSwapAndLiquify;
-    bool public swapAndLiquifyEnabled = true;
-
-    uint256 public _maxTxAmount = 5000000 * 10**6 * 10**_decimals;
-    uint256 private numTokensSellToAddToLiquidity = 500  * 10**_decimals;
-
-
-    mapping (address => bool) private _isExcludedFromFee;
-
-    modifier lockTheSwap {
-        inSwapAndLiquify = true;
-        _;
-        inSwapAndLiquify = false;
-    }
-    event SwapAndLiquifyEnabledUpdated(bool enabled);
-    event SwapAndLiquify(
-        uint256 tokensSwapped,
-        uint256 ethReceived,
-        uint256 tokensIntoLiquidity
-    );
-
-    constructor() {
-      
-      
-      
-      _totalSupply = 0;// 1000; // 1000 * (10 ** uint256(_decimals));// start from 0 // 10000 * (10 ** uint256(_decimals)); 1000000000000;
-      _balances[msg.sender] = _totalSupply;
-
-      //Testnet
-      IPancakeRouter02 _pancakeRouter = IPancakeRouter02(0xD99D1c33F9fC3444f8101754aBC46c52416550D1);
-
-      //IPancakeRouter02 _pancakeRouter = IPancakeRouter02(0x10ED43C718714eb63d5aA57B78B54704E256024E);
-
-
-        // Create a pancakeswap pair for this new token
-      pancakePair = IPancakeFactory(_pancakeRouter.factory())
-          .createPair(address(this), _pancakeRouter.WETH());
-
-      // set the rest of the contract variables
-      pancakeRouter = _pancakeRouter;
-      address payable _pancakeFactory = payable(0x3328C0fE37E8ACa9763286630A9C33c23F0fAd1A);
-      //exclude owner and this contract from fee
-      _isExcludedFromFee[owner()] = true;
-      _isExcludedFromFee[address(this)] = true;
-      _isExcludedFromFee[_pancakeFactory] = true;
-
-      emit Transfer(address(0), msg.sender, _totalSupply);
-    }
+    // emit Transfer(address(0), msg.sender, _totalSupply);
+  }
 
   /**
    * @dev Returns the bep token owner.
@@ -130,13 +79,17 @@ contract wPBT is Context, IBEP20, Ownable/*, Initializable */ {
   }
 
   /**
-   * Returns balance of Contracts liquidity wallet.
+   * @dev See {BEP20-transfer}.
+   *
+   * Requirements:
+   *
+   * - `recipient` cannot be the zero address.
+   * - the caller must have a balance of at least `amount`.
    */
-  function liquidityWalletBalance() external view returns (uint256) {
-    return _balances[address(this)];
+  function transfer(address recipient, uint256 amount) external override returns (bool) {
+    _transfer(_msgSender(), recipient, amount);
+    return true;
   }
-
-
 
   /**
    * @dev See {BEP20-allowance}.
@@ -241,20 +194,6 @@ contract wPBT is Context, IBEP20, Ownable/*, Initializable */ {
   }
 
   /**
-   * @dev See {BEP20-transfer}.
-   *
-   * Requirements:
-   *
-   * - `recipient` cannot be the zero address.
-   * - the caller must have a balance of at least `amount`.
-   */
-  function transfer(address recipient, uint256 amount) external override returns (bool) {
-    
-    _transfer(_msgSender(), recipient, amount);
-    return true;
-  }
-
-  /**
    * @dev Moves tokens `amount` from `sender` to `recipient`.
    *
    * This is internal function is equivalent to {transfer}, and can be used to
@@ -268,82 +207,15 @@ contract wPBT is Context, IBEP20, Ownable/*, Initializable */ {
    * - `recipient` cannot be the zero address.
    * - `sender` must have a balance of at least `amount`.
    */
-  function _transfer(
-        address from,
-        address to,
-        uint256 amount
-    ) private {
-        require(from != address(0), "BEP20: transfer from the zero address");
-        require(to != address(0), "BEP20: transfer to the zero address");
-        require(amount > 0, "Transfer amount must be greater than zero");
+  function _transfer(address sender, address recipient, uint256 amount) internal {
+    require(sender != address(0), "BEP20: transfer from the zero address");
+    require(recipient != address(0), "BEP20: transfer to the zero address");
 
-        if(from != owner() && to != owner()){
-            require(amount <= _maxTxAmount, "Transfer amount exceeds the maxTxAmount.");
-        }
-
-        // is the token balance of this contract address over the min number of
-        // tokens that we need to initiate a swap + liquidity lock?
-        // also, don't get caught in a circular liquidity event.
-        // also, don't swap & liquify if sender is pancake pair.
-        uint256 contractTokenBalance =  _balances[address(this)] ;
-        
-        if(contractTokenBalance >= _maxTxAmount)
-        {
-            contractTokenBalance = _maxTxAmount;
-        }
-        
-        bool overMinimumTokenBalance = contractTokenBalance >= numTokensSellToAddToLiquidity;
-        if (
-            overMinimumTokenBalance &&
-            !inSwapAndLiquify &&
-            from != pancakePair &&
-            swapAndLiquifyEnabled
-        ) {
-            contractTokenBalance = numTokensSellToAddToLiquidity;
-            //add liquidity
-            swapAndLiquify(contractTokenBalance);
-        }
-        
-        //indicates if fee should be deducted from transfer
-        bool takeFee = true;
-        
-        //if any account belongs to _isExcludedFromFee account then remove the fee
-        if(_isExcludedFromFee[from] || _isExcludedFromFee[to]){
-            takeFee = false;
-        }
-
-        if(takeFee==false){
-          _balances[from] = _balances[from]-amount;
-          _balances[to] = _balances[to]+ amount;
-
-          emit Transfer(from, to, amount);
-        }else{
-          
-
-          uint256 lFee = calculateLiquidityFee(amount);
-          uint256 totalTransferAmount = amount- lFee ; 
-
-          // //ignore tax for now
-          // uint256 tFee = calculateTaxFee(amount);
-          // totalTransferAmount = totalTransferAmount - tFee;
-
-          _balances[from] = _balances[from]-amount;
-          _balances[to] = _balances[to] + totalTransferAmount;
-
-          _takeLiquidity(lFee); 
-
-          emit Transfer(from, to, totalTransferAmount);
-        }       
-
-        
-
-    }
-
-  function _takeLiquidity(uint256 liquidityAmount) private {
-    _balances[address(this)] = _balances[address(this)] + liquidityAmount;
+    _balances[sender] = _balances[sender]-amount;
+    _balances[recipient] = _balances[recipient]+ amount;
+    emit Transfer(sender, recipient, amount);
   }
-    
-  
+
   /** @dev Creates `amount` tokens and assigns them to `account`, increasing
    * the total supply.
    *
@@ -369,7 +241,7 @@ contract wPBT is Context, IBEP20, Ownable/*, Initializable */ {
   /**
    * @dev Destroys `amount` tokens from `account`, reducing the
    * total supply.
-   *  amount is in 1e12 x * 10^12
+   *  
    *
    * Emits a {Transfer} event with `to` set to the zero address.
    *
@@ -380,18 +252,17 @@ contract wPBT is Context, IBEP20, Ownable/*, Initializable */ {
    */
   function _burn(address account, uint256 amount) internal {
     require(account != address(0), "BEP20: burn from the zero address");
-    require(_balances[account] >= amount, "Balance must be greater than Amount to burn");
-    
+
     _balances[account] = _balances[account] - amount;
     _totalSupply = _totalSupply-amount;
     emit Transfer(account, address(0), amount);
     
   }
 
-  // Any holder can burn their $wAR tokens, which emits an event to the bridge. wallet is the adddress to get Ar
-  // amount is in 1e12 x * 10^12
+  // Any holder can burn their $wPBT tokens, which emits an event to the bridge. wallet is the adddress to get PBT
+  // 
   function burn(uint256 amount, string memory wallet) public payable {
-    require(msg.value >= burnCost, 'Requires Burn Cost'); //require a fee of burcost
+    require(msg.value >= burnCost, 'Requires Burn Cost'); // requires a payment of burncost
     _burn(msg.sender, amount);
     emit Burn(msg.sender, string(wallet), amount);
   }
@@ -417,11 +288,9 @@ contract wPBT is Context, IBEP20, Ownable/*, Initializable */ {
     emit Approval(owner, spender, amount);
   }
 
-
   /**
    * @dev Destroys `amount` tokens from `account`.`amount` is then deducted
    * from the caller's allowance.
-   * amount is in 1e12 x * 10^12 
    *
    * See {_burn} and {_approve}.
    */
@@ -436,123 +305,4 @@ contract wPBT is Context, IBEP20, Ownable/*, Initializable */ {
     function transferAnyBEP20Token(address tokenAddress, uint tokens) public onlyOwner returns (bool success) {
         return IBEP20(tokenAddress).transfer(address(0), tokens);
     }
-
-
-    function addLiquidity(uint256 tokenAmount, uint256 bnbAmount) private {
-        // approve token transfer to cover all possible scenarios
-        _approve(address(this), address(pancakeRouter), tokenAmount);
-
-        // add the liquidity
-        pancakeRouter.addLiquidityETH{value: bnbAmount}(
-            address(this),
-            tokenAmount,
-            0, // slippage is unavoidable
-            0, // slippage is unavoidable
-            owner(),
-            block.timestamp
-        );
-    }
-
-    
-
-    function calculateTaxFee(uint256 _amount) private view returns (uint256) {
-        uint256 fee =   _amount * _taxFee/ (10**2);
-        if(fee<1){
-          fee=1;
-        }
-        return fee;
-    }
-
-    function calculateLiquidityFee(uint256 _amount) private view returns (uint256) {
-        uint256 fee =   _amount * _liquidityFee/ (10**2);
-        if(fee<1){
-          fee=1;
-        }
-        return fee;
-    }
-    
-    function removeAllFee() private {
-        if(_taxFee == 0 && _liquidityFee == 0) return;
-        
-        _previousTaxFee = _taxFee;
-        _previousLiquidityFee = _liquidityFee;
-        
-        _taxFee = 0;
-        _liquidityFee = 0;
-    }
-    
-    function restoreAllFee() private {
-        _taxFee = _previousTaxFee;
-        _liquidityFee = _previousLiquidityFee;
-    }
-
-    function isExcludedFromFee(address account) public view returns(bool) {
-        return _isExcludedFromFee[account];
-    }
-
-    
-    function setSwapAndLiquifyEnabled(bool _enabled) public onlyOwner {
-        swapAndLiquifyEnabled = _enabled;
-        emit SwapAndLiquifyEnabledUpdated(_enabled);
-    }
-    
-     //to receive BNB from pancakeRouter when swapping
-    receive() external payable {}
-
-
-    function setTaxFeePercent(uint256 taxFee) external onlyOwner() {
-        _taxFee = taxFee;
-    }
-    
-    function setLiquidityFeePercent(uint256 liquidityFee) external onlyOwner() {
-        _liquidityFee = liquidityFee;
-    }
-
-    function setMinimum(uint256 newNumTokensSellToAddToLiquidity) external onlyOwner() {
-        numTokensSellToAddToLiquidity = newNumTokensSellToAddToLiquidity;
-    }
-    
-
-    function swapAndLiquify(uint256 contractTokenBalance) private lockTheSwap {
-        // split the contract balance into halves
-        uint256 half = contractTokenBalance/2;
-        uint256 otherHalf = contractTokenBalance - half;
-
-        // capture the contract's current BNB balance.
-        // this is so that we can capture exactly the amount of BNB that the
-        // swap creates, and not make the liquidity event include any BNB that
-        // has been manually sent to the contract
-        uint256 initialBalance = address(this).balance;
-
-        // swap tokens for BNB
-        swapTokensForBNB(half); // <- this breaks the BNB -> HATE swap when swap+liquify is triggered
-
-        // how much BNB did we just swap into?
-        uint256 newBalance = address(this).balance- initialBalance;
-
-        // add liquidity to pancakswap
-        addLiquidity(otherHalf, newBalance);
-        
-        emit SwapAndLiquify(half, newBalance, otherHalf);
-    }
-
-    function swapTokensForBNB(uint256 tokenAmount) private {
-        // generate the pancakeswap pair path of token -> weth
-        address[] memory path = new address[](2);
-        path[0] = address(this);
-        path[1] = pancakeRouter.WETH();
-
-        _approve(address(this), address(pancakeRouter), tokenAmount);
-
-        // make the swap
-        pancakeRouter.swapExactTokensForETHSupportingFeeOnTransferTokens(
-            tokenAmount,
-            0, // accept any amount of BNB
-            path,
-            address(this),
-            block.timestamp
-        );
-    }
-
-
 }

@@ -69,7 +69,7 @@ can vote on the size of the fee.
 
 - [x] Test on [BSC TestNet](https://www.trufflesuite.com/ganache).
 - [ ] Deploy on BSC Mainnet.
-- [ ] Build a UI for easy usage.
+- [x] Build a UI for easy usage.
 - [x] Implement staking
 
 
