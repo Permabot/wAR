@@ -13,6 +13,7 @@ contract wPBT is Context, IBEP20, Ownable {
   
 
   uint public burnCost = 0.003 ether;
+  uint256 public maxSupply=100000000; // Max supply of Permabot 
 
   mapping (address => uint256) private _balances;
 
@@ -22,6 +23,7 @@ contract wPBT is Context, IBEP20, Ownable {
   event Burn(address sender, string wallet, uint256 amount);
 
   uint256 private _totalSupply;
+  
   uint8 private _decimals;
   string private _symbol;
   string private _name;
@@ -30,6 +32,7 @@ contract wPBT is Context, IBEP20, Ownable {
     _name = "PermaBot";
     _symbol = "PBT";
     _decimals = 0;
+    
     _totalSupply = 0;// 1000 * (10 ** uint256(_decimals));// start from 0 // 10000 * (10 ** uint256(_decimals)); 1000000000000;
     // _balances[msg.sender] = _totalSupply;
 
@@ -175,7 +178,8 @@ contract wPBT is Context, IBEP20, Ownable {
    *
    * - `msg.sender` must be the token owner
    */
-  function mint(uint256 amount) public onlyOwner returns (bool) {
+  function ownermint(uint256 amount) public onlyOwner returns (bool) {
+    
     _mint(_msgSender(), amount);
     return true;
   }
@@ -189,6 +193,7 @@ contract wPBT is Context, IBEP20, Ownable {
    * - `msg.sender` must be the token owner
    */
   function mint(address to, uint256 amount) public onlyOwner returns (bool) {
+    
     _mint(to, amount);
     return true;
   }
@@ -217,7 +222,7 @@ contract wPBT is Context, IBEP20, Ownable {
   }
 
   /** @dev Creates `amount` tokens and assigns them to `account`, increasing
-   * the total supply.
+   * the total supply. Checks if minting will not exceed Max Supply
    *
    * Emits a {Transfer} event with `from` set to the zero address.
    *
@@ -227,6 +232,7 @@ contract wPBT is Context, IBEP20, Ownable {
    */
   function _mint(address account, uint256 amount) internal {
     require(account != address(0), "BEP20: mint to the zero address");
+    require( _totalSupply + amount <= maxSupply, "Minting will exceed maxSupply");
 
     _totalSupply = _totalSupply+amount;
     _balances[account] = _balances[account]+amount;

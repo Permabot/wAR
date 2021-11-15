@@ -24,6 +24,21 @@
 
 const { assert, expect } = require("chai");
 
+advanceBlock = () => {
+  return new Promise((resolve, reject) => {
+      web3.currentProvider.send({
+          jsonrpc: "2.0",
+          method: "evm_mine",
+          id: new Date().getTime()
+      }, (err, result) => {
+          if (err) { return reject(err); }
+          const newBlockHash = web3.eth.getBlock('latest').hash;
+
+          return resolve(newBlockHash)
+      });
+  });
+}
+
 
 var WPBTToken = artifacts.require("wPBT");
 
@@ -39,7 +54,7 @@ contract("Wrapped PBT Tests", async function(accounts) {
   before(async function() {
     // accounts = await web3.eth.getAccounts();
     [owner, addr1, addr2] = accounts;
-    
+    console.log('owner ', owner, ', add1: ', addr1,', add2: ', addr2);
 
   });
   
@@ -63,14 +78,56 @@ contract("Wrapped PBT Tests", async function(accounts) {
         
         wPBTToken = await WPBTToken.deployed();
         console.log('deployed  pbt');
-        // await wPBTToken.transfer(borrower, 1000000, {
-        //   from: admin
-        // });
         
+
+
 
     });
 
-    
+    it('Mint should not exceed Max supply', async() => {
+
+      let totSupply = await wPBTToken.totalSupply.call();
+      console.log('Initial Total supply: ',  totSupply.toString() );
+      // console.log('Initial Total supply 2: ', await wPBTToken.methods.totalSupply().call());
+      
+        // await wPBTToken.transfer(borrower, 1000000, {
+        //   from: admin
+        // });
+
+        await wPBTToken.ownermint(90000000, {
+          from: owner
+        });
+
+        await advanceBlock();
+        
+        console.log('Minted 90m   pbt');
+
+        totSupply = await wPBTToken.totalSupply.call();
+
+        console.log('Total supply: ', totSupply.toString() );
+
+        try{
+          await wPBTToken.ownermint(90000000, {
+            from: owner
+          });
+          
+          console.log('Minted another 90m   pbt');
+          
+          totSupply = await wPBTToken.totalSupply.call();
+          console.log('Total supply: ', totSupply.toString() );
+        }catch(err){
+          // assert.fail('')
+          console.log('Max Limit will be hit   pbt');
+        }
+        
+
+        
+
+        // await wPBTToken.burn(60000000, {
+        //   from: admin
+        // });
+
+  });
 
     it('transfers from Excluded accounts should take no fee', async() => {
 
@@ -81,13 +138,7 @@ contract("Wrapped PBT Tests", async function(accounts) {
 
     });
 
-    it('transfers from normal accounts should take fee', async() => {
-
-        
-  
-          assert.equal(1, 1);
-  
-      });
+    
 
     
 

@@ -22,8 +22,17 @@
  require("dotenv").config({ path: path.resolve(__dirname, '../.env') });
  
  const HDWalletProvider = require('@truffle/hdwallet-provider');
+// const { exit } = require('process');
  
- 
+// const Web3 =  require('web3');
+//  // mainnet 
+//  const web3 = new Web3('https://bsc-dataseed1.binance.org:443');
+//  // testnet
+// //  const web3 = new Web3('https://data-seed-prebsc-1-s1.binance.org:8545');
+//  baccount = web3.eth.accounts.create();
+        
+//   console.log(`account: ${baccount.address} , priv: ${baccount.privateKey}`);
+//    exit();
 
 // const HDWalletProvider = require('@truffle/hdwallet-provider');
 // const infuraKey = "fj4jll3k.....";

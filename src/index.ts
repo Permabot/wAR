@@ -360,7 +360,7 @@ const bscServer = async (block?: number) => {
   }
   
 
-  setTimeout(bscServer, 30*1000, latestBlock);
+  setTimeout(bscServer, 20*1000, latestBlock);
 
 };
 
